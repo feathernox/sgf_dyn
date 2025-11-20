@@ -3,7 +3,7 @@ import itertools
 from multiprocessing.pool import Pool
 import os
 import pickle
-from trainLD import trainSGD
+from trainLD import trainLD
 ##### Fix a seed for reproducibility
 np.random.seed(0)
 
@@ -44,10 +44,10 @@ n = 400
 nS = 1000
 # Signal-to-noise ratio
 snr = 1./5.
-# Max number of (S)GD iterations
+# Max number of process iterations
 n_it_max= int(1e6)  
-##### Number of SGD runs 
-n_SGD = 1
+##### Number of stochastic runs 
+n_runs = 1
 ###########################
 ##### Store only the terminal point in the dynamics
 only_end = False
@@ -88,8 +88,8 @@ pID = '{:02d}'.format(intI) + '{:02d}'.format(intF)
 #### List of nS
 nS_ = np.arange(0,nS)
 #### Folder results
-subfolder = 'lr%.0e_d%d_n%d_snr%.0e_nS%d_nsgd%d_Nmax%.0e_np%d' % (lr, d, n, snr, nS, n_SGD, n_it_max, np_points)
-folder = 'results/SGD/' + subfolder
+subfolder = 'lr%.0e_d%d_n%d_snr%.0e_nS%d_nrun%d_Nmax%.0e_np%d' % (lr, d, n, snr, nS, n_runs, n_it_max, np_points)
+folder = 'results/LD/' + subfolder
 #### If the folder does not exist, create
 isExist = os.path.exists(folder)
 if not isExist:
@@ -102,7 +102,7 @@ print('d = %d' % d)
 print('n = %d' % n)
 print('snr = %.0e' % snr)
 print('nS = %d' % nS)
-print('n_SGD = %d' % n_SGD)
+print('n_runs = %d' % n_runs)
 print('n_it_max = %.0e' % n_it_max)
 print('np_points = %d' % np_points)
 print('p = %s' % p_)
@@ -110,7 +110,7 @@ print('pID = %s' % pID)
 
 def training(p,nS):
     np.random.seed(nS)
-    return trainSGD(p, nS, lr=lr, X=X, y=y, beta0= beta0, plot_list=plot_list, n=n, d=d, n_it_max=n_it_max, n_SGD= n_SGD)
+    return trainLD(p, nS, lr=lr, X=X, y=y, beta0= beta0, plot_list=plot_list, n=n, d=d, n_it_max=n_it_max, n_runs=n_runs)
 
 if __name__ == '__main__':
     with Pool() as pool:
@@ -165,7 +165,7 @@ with open(path2+'__parameters.txt', 'w') as f:
     f.write('n = %d \n' % n)
     f.write('snr = %.0e \n' % snr)
     f.write('nS = %d \n' % nS)
-    f.write('n_SGD = %d \n' % n_SGD)
+    f.write('n_runs = %d \n' % n_runs)
     f.write('n_it_max = %.0e \n' % n_it_max)
     f.write('np_points = %d \n' % np_points)
     f.write('p = %s \n' % p_)
