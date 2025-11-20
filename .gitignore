@@ -1,0 +1,44 @@
+# --- CPython build artifacts ---
+
+# Compiled extension modules
+*.so
+*.pyd
+*.dll
+*.dylib
+
+# Build directories created by setup.py / pyproject builds
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# C/C++ intermediate build files
+*.o
+*.obj
+*.a
+*.lib
+*.exp
+*.pdb
+
+# Cython-generated C/C++ files (if your project uses Cython)
+*.c
+*.cpp
+*_cython.c
+*_cython.cpp
+
+# Bytecode cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Wheel build artifacts
+*.whl
+
+# pytest cache (often appears during extension testing)
+.pytest_cache/
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
