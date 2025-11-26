@@ -1,3 +1,4 @@
+# TO REMOVE WHEN FINISH WITH TRAINLD
 import numpy as np
 import itertools
 from multiprocessing.pool import Pool

@@ -43,7 +43,7 @@ n = 400
 # Number of S random instances
 nS = 1000
 # Signal-to-noise ratio
-snr = 1./5.
+snr = 1. / 5.
 # Max number of process iterations
 n_it_max= int(1e6)  
 ##### Number of stochastic runs 
@@ -53,7 +53,7 @@ n_runs = 1
 only_end = False
 ###########################
 ##### Learning rate
-lr = 1./d
+lr = 1. / d
 ##### Diffusion coefficient
 epsilon = 0.1
 ##### Data matrix

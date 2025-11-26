@@ -8,7 +8,8 @@ cimport numpy as np
 from libc.stdlib cimport malloc, free
 import time
 
-cpdef trainLD(int p, int nS, double lr, double[:,:] X, double[:] y, double[:] beta0, np.int64_t[:] plot_list, int n, int d, int n_it_max, int n_runs):
+cpdef trainLD(int p, int nS, double lr, double[:,:] X, double[:] y, double[:] beta0, np.int64_t[:] plot_list,
+int n, int d, int n_it_max, int n_runs, double epsilon):
     cdef unsigned int k, r, s, q
     #####
     cdef double *arr = <double*>malloc(p * sizeof(double))
@@ -22,20 +23,20 @@ cpdef trainLD(int p, int nS, double lr, double[:,:] X, double[:] y, double[:] be
     cdef double *arr6 = <double*>malloc( n * p * sizeof(double))
     cdef double[:,:] XS = <double[:n, :p]>arr6
 
-    print('Beginning LD training ----- p= %d --- nS= %d' % (p,nS))
+    print('Beginning LD training ----- p= %d --- nS= %d\n' % (p,nS), end='')
     ###### Select randomly p integers from [d]
-    S  = np.random.choice(d, size=p, replace=False)
+    S = np.random.choice(d, size=p, replace=False)
          
     ###### Initializing the estimator
     betaS0[:] = 0.
-    for q in range(0,p):
+    for q in range(0, p):
         betaS0[q] = beta0[S[q]]
     del beta0
 
     ###### Constructing XS
-    for r in range(0,n):
-        for q in range(0,p):
-            XS[r,q] = X[r,S[q]]
+    for r in range(0, n):
+        for q in range(0, p):
+            XS[r, q] = X[r, S[q]]
     del X
     free(arr2)
        
