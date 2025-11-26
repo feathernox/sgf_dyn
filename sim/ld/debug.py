@@ -22,26 +22,17 @@ def xlog_scale(log_x_max, scale, log_base= 10):
 
 ##### p's input
 ##### intI and intF controls the set of p's to be run
-np_points = 50
+np_points = 5  # step size between parameters
 ###
-intI = 0
-intF = 7
-###
-#intI = 7
-#intF = 14
-###
-#intI = 14
-#intF = 21
-###
-#intI = 21
-#intF = 28
+intI = 1
+intF = 2
 ##### Parameters
 # Data dimension
-d = 1000
+d = 50
 # Number of data points
-n = 400
+n = 20
 # Number of S random instances
-nS = 1000
+nS = 5
 # Signal-to-noise ratio
 snr = 1./5.
 # Max number of process iterations
@@ -63,29 +54,31 @@ beta_star_ = np.random.randn(d)
 beta_star = np.copy(beta_star_) / np.linalg.norm(beta_star_)
 ###### Initializing the estimator
 beta0_ = np.random.randn(d)
-beta0  = np.copy(beta0_) / np.linalg.norm(beta0_)
+beta0  = np.copy(beta0_)/np.linalg.norm(beta0_)
 ##### Targets
-y = X @ beta_star + snr * np.random.randn(n)
+y = X @ beta_star + snr*np.random.randn(n)
 #### Plot
 log_x_max = (np.log10(n_it_max)-1).astype(int)  
-plot_list = xlog_scale(log_x_max, scale=1., log_base= 10)
+plot_list = xlog_scale(log_x_max, scale=1., log_base=10)
 if only_end:
     plot_list = plot_list[-1:]
-#### List of p's
-if np.abs(d-1000) > 0:
-    d_AUX = 1000
-    np_points_AUX = 50
-    n_AUX = 400
-    p__AUX = np.arange(0, d_AUX , int(d_AUX/np_points_AUX))
-    p__AUX[0] = 1
-    p_AUX = p__AUX[intI:intF]
-    alpha_AUX = p_AUX/n_AUX 
-    p_ = (alpha_AUX*n).astype(int)
-    p_[0] = 1
-else:
-    p__ = np.arange(0, d, int(d/np_points))
-    p__[0] = 1
-    p_ = p__[intI:intF]
+# #### List of p's
+# if d > 1000: # idk why ??
+#     d_AUX = 1000
+#     np_points_AUX = 50
+#     n_AUX = 400
+#     p__AUX = np.arange(0, d_AUX , int(d_AUX/np_points_AUX))
+#     p__AUX[0] = 1
+#     p_AUX = p__AUX[intI:intF]
+#     alpha_AUX = p_AUX/n_AUX 
+#     p_ = (alpha_AUX*n).astype(int)
+#     p_[0] = 1
+# else:
+
+p__ = np.arange(0, d + 1, int(d / np_points))
+p__[0] = 1
+p_ = p__[intI:intF]
+
 pID = '{:02d}'.format(intI) + '{:02d}'.format(intF) 
 #### List of nS
 nS_ = np.arange(0,nS)
@@ -114,7 +107,7 @@ print('pID = %s' % pID)
 def training(p,nS):
     np.random.seed(nS)
     return trainLD(p, nS, lr=lr, X=X, y=y, beta0= beta0, plot_list=plot_list, n=n, d=d,
-                n_it_max=n_it_max, n_runs=n_runs, epsilon=epsilon)
+                   n_it_max=n_it_max, n_runs=n_runs, epsilon=epsilon)
 
 if __name__ == '__main__':
     with Pool() as pool:
