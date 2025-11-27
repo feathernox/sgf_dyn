@@ -15,13 +15,24 @@ int n, int d, int n_it_max, int n_runs, double epsilon):
     cdef double *arr = <double*>malloc(p * sizeof(double))
     cdef double[:] betaS = <double[:p]>arr
     #####
+    cdef double *arr3 = <double*>malloc(n * sizeof(double))
+    cdef double[:] D = <double[:n]>arr3
+    #####
+    cdef double *arr4 = <double*>malloc(p * sizeof(double))
+    cdef double[:] GRAD = <double[:p]>arr4
+    #####
     cdef double *arr5 = <double*>malloc(p * sizeof(double))
     cdef double[:] betaS0 = <double[:p]>arr5
+    #####
+    cdef double gd_aux0, gd_aux1, diff_coeff
+    #####
     cdef long *arr2 = <long*>malloc(p * sizeof(double))
     cdef long[:] S = <long[:p]>arr2
     #####
-    cdef double *arr6 = <double*>malloc( n * p * sizeof(double))
+    cdef double *arr6 = <double*>malloc(n * p * sizeof(double))
     cdef double[:,:] XS = <double[:n, :p]>arr6
+
+    diff_coeff = np.sqrt(2 * epsilon)
 
     print('Beginning LD training ----- p= %d --- nS= %d\n' % (p,nS), end='')
     ###### Select randomly p integers from [d]
@@ -40,12 +51,12 @@ int n, int d, int n_it_max, int n_runs, double epsilon):
     del X
     free(arr2)
        
-    ######## STOCHASTIC GRADIENT DESCENT
+    ######## LANGEVIN DIFFUSION
     ##############
     start = time.time()
     ##############
 
-    betaS_av = np.zeros((len(plot_list)+1,p))
+    betaS_av = np.zeros((len(plot_list) + 1, p))
     betaS_av[0] = np.array(betaS0)
 
     for N in range(n_runs):
@@ -53,17 +64,28 @@ int n, int d, int n_it_max, int n_runs, double epsilon):
         betaS = np.copy(betaS0)
         #######
         count_aux = 1
-        for k in range(1,n_it_max+1):
-            ## Randomly select a training sample
-            jk = np.random.randint(n)
-            ## Inner product: XS_jk and beta_k
-            sgd_aux0 = 0.
+        for k in range(1, n_it_max+1):
+            #### GD ####
+            ## Inner product: XS and beta_k 
+            D[:] = 0. 
+            GRAD[:] = 0.
+            for r in range(0,n):
+                gd_aux0 = 0.
+                for s in range(0,p):
+                    gd_aux0 += XS[r,s] * betaS[s]
+                D[r] = y[r] - gd_aux0
+            ## Inner product: y - XS*betaS times xs
             for r in range(0,p):
-                sgd_aux0 += XS[jk,r]*betaS[r]
-            Djk = y[jk] - sgd_aux0
-            ## SGD update
-            for s in range(0,p):  
-                betaS[s] += lr*Djk*XS[jk,s]
+                gd_aux1 = 0.
+                for s in range(0, n):
+                    gd_aux1 += XS[s,r] * D[s]
+                GRAD[r] = gd_aux1   
+            ## GD update
+            for u in range(0,p):
+                b_ku = np.random.randn()
+                betaS[u] += lr * (GRAD[u] / n + diff_coeff * b_ku)
+            
+            # print(np.asarray(betaS))
 
             ## Retrieving dynamics
             save_k = k in plot_list
@@ -73,6 +95,8 @@ int n, int d, int n_it_max, int n_runs, double epsilon):
     ##############
     end = time.time()
     ##############
+    free(arr3)
+    free(arr4)
     free(arr6)
     free(arr5)
     free(arr)

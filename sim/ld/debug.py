@@ -33,13 +33,13 @@ d = 50
 # Number of data points
 n = 20
 # Number of S random instances
-nS = 5
+nS = 1
 # Signal-to-noise ratio
 snr = 1./5.
 # Max number of process iterations
-n_it_max= int(1e6)  
+n_it_max = int(30)  
 ##### Number of stochastic runs 
-n_runs = 1
+n_runs = 2
 ###########################
 ##### Store only the terminal point in the dynamics
 only_end = False
@@ -47,7 +47,7 @@ only_end = False
 ##### Learning rate
 lr = 1./d
 ##### Diffusion coefficient
-epsilon = 0.1
+epsilon = 0.01
 ##### Data matrix
 X = np.random.randn(n,d)
 ##### Beta star d-dimension (ground true)
