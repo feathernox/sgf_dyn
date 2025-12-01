@@ -9,7 +9,7 @@ from libc.stdlib cimport malloc, free
 import time
 
 cpdef trainGD(int p, int nS, double lr, double[:,:] X, double[:] y, double[:] beta0, np.int64_t[:] plot_list, int n, int d, int n_it_max):
-    cdef unsigned int k, r, s, u, q
+    cdef int k, r, s, u, q
     #####
     cdef double *arr = <double*>malloc(p * sizeof(double))
     cdef double[:] betaS = <double[:p]>arr
