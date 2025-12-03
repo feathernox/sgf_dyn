@@ -74,14 +74,15 @@ if np.abs(d-1000) > 0:
     d_AUX = 1000
     np_points_AUX = 50
     n_AUX = 400
-    p__AUX = np.arange(0, d_AUX , int(d_AUX/np_points_AUX))
+    p__AUX = np.arange(0, d_AUX , int(d_AUX / np_points_AUX))
     p__AUX[0] = 1
-    p_AUX = p__AUX[intI:intF]
-    alpha_AUX = p_AUX/n_AUX 
-    p_ = (alpha_AUX*n).astype(int)
+    p_AUX = p__AUX
+    alpha_AUX = p_AUX / n_AUX 
+    p_ = (alpha_AUX * n).astype(int)
     p_[0] = 1
+    p_ = p_[intI:intF]
 else:
-    p__ = np.arange(0, d, int(d/np_points))
+    p__ = np.arange(0, d, int(d / np_points))
     p__[0] = 1
     p_ = p__[intI:intF]
 pID = '{:02d}'.format(intI) + '{:02d}'.format(intF) 

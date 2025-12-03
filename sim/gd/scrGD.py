@@ -71,14 +71,15 @@ if np.abs(d-1000) > 0:
     d_AUX = 1000
     np_points_AUX = 50
     n_AUX = 400
-    p__AUX = np.arange(0, d_AUX , int(d_AUX/np_points_AUX))
+    p__AUX = np.arange(0, d_AUX , int(d_AUX / np_points_AUX))
     p__AUX[0] = 1
-    p_AUX = p__AUX[intI:intF]
-    alpha_AUX = p_AUX/n_AUX 
-    p_ = (alpha_AUX*n).astype(int)
+    p_AUX = p__AUX
+    alpha_AUX = p_AUX / n_AUX 
+    p_ = (alpha_AUX * n).astype(int)
     p_[0] = 1
+    p_ = p_[intI:intF]
 else:
-    p__ = np.arange(0, d, int(d/np_points))
+    p__ = np.arange(0, d, int(d / np_points))
     p__[0] = 1
     p_ = p__[intI:intF]
 pID = '{:02d}'.format(intI) + '{:02d}'.format(intF) 
@@ -144,21 +145,21 @@ if not isExist:
     os.makedirs(folder2 )
 path2 = folder2 + '/'
 ################
-with open(path2+'beta0.npy', 'wb') as f:
+with open(path2 + 'beta0.npy', 'wb') as f:
     np.save(f, beta0)   
-with open(path2+'betastar.npy', 'wb') as f:
+with open(path2 + 'betastar.npy', 'wb') as f:
     np.save(f, beta_star)
-with open(path2+'plotlist.npy', 'wb') as f:
+with open(path2 + 'plotlist.npy', 'wb') as f:
     np.save(f, plot_list0)
-with open(path2+'X.npy', 'wb') as f:
+with open(path2 + 'X.npy', 'wb') as f:
     np.save(f, X)
-with open(path2+'y.npy', 'wb') as f:
+with open(path2 + 'y.npy', 'wb') as f:
     np.save(f, y)
-with open(path2+'plist.npy', 'wb') as f:
+with open(path2 + 'plist.npy', 'wb') as f:
     np.save(f, p_)
 
 
-with open(path2+'__parameters.txt', 'w') as f:
+with open(path2 + '__parameters.txt', 'w') as f:
     f.write('lr = %.0e \n' % lr)
     f.write('d = %d \n' % d)
     f.write('n = %d \n' % n)
