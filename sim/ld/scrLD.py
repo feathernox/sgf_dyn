@@ -111,10 +111,10 @@ print('np_points = %d' % np_points)
 print('p = %s' % p_)
 print('pID = %s' % pID)
 
-def training(p,nS):
+def training(p, nS):
     np.random.seed(nS)
-    return trainLD(p, nS, lr=lr, X=X, y=y, beta0= beta0, plot_list=plot_list, n=n, d=d,
-                n_it_max=n_it_max, n_runs=n_runs, epsilon=epsilon)
+    return trainLD(p, nS, lr=lr, X=X, y=y, beta0=beta0, plot_list=plot_list, n=n, d=d,
+                   n_it_max=n_it_max, n_runs=n_runs, epsilon=epsilon)
 
 if __name__ == '__main__':
     with Pool() as pool:
@@ -130,8 +130,8 @@ print('   ')
 plen = len(p_)
 nSlen = len(nS_)
 
-count_aux= 0
-for k in np.arange(0,nSlen*plen, nSlen):
+count_aux = 0
+for k in np.arange(0, nSlen * plen, nSlen):
     with open(path+'p%d_DYN_betaS.npy' % p_[count_aux], 'wb') as f:
         np.save(f, np.array(result[k:k+nSlen]))
     Sp_ = []

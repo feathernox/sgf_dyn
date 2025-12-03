@@ -42,4 +42,4 @@ __pycache__/
 *.tmp
 *.log
 .DS_Store
-slurm/run.slurm
+/slurm/
