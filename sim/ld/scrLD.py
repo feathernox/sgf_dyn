@@ -112,6 +112,9 @@ print('p = %s' % p_)
 print('pID = %s' % pID)
 
 def training(p, nS):
+    # note that this way of sampling implies:
+    # p1 < p2 and same seed: S1 ⊆ S2
+    # particularly S1 = [i1 i2 .. i_p1] and S2 = [i1 i2 .. i_p1 i_{p1+1} .. i_p2])
     np.random.seed(nS)
     return trainLD(p, nS, lr=lr, X=X, y=y, beta0=beta0, plot_list=plot_list, n=n, d=d,
                    n_it_max=n_it_max, n_runs=n_runs, epsilon=epsilon)
@@ -151,19 +154,19 @@ if not isExist:
     os.makedirs(folder2 )
 path2 = folder2 + '/'
 ################
-with open(path2+'beta0.npy', 'wb') as f:
+with open(path2 + 'beta0.npy', 'wb') as f:
     np.save(f, beta0)   
-with open(path2+'betastar.npy', 'wb') as f:
+with open(path2 + 'betastar.npy', 'wb') as f:
     np.save(f, beta_star)
-with open(path2+'plotlist.npy', 'wb') as f:
+with open(path2 + 'plotlist.npy', 'wb') as f:
     np.save(f, plot_list0)
-with open(path2+'X.npy', 'wb') as f:
+with open(path2 + 'X.npy', 'wb') as f:
     np.save(f, X)
-with open(path2+'y.npy', 'wb') as f:
+with open(path2 + 'y.npy', 'wb') as f:
     np.save(f, y)
-with open(path2+'plist.npy', 'wb') as f:
+with open(path2 + 'plist.npy', 'wb') as f:
     np.save(f, p_)
-with open(path2+'__parameters.txt', 'w') as f:
+with open(path2 + '__parameters.txt', 'w') as f:
     f.write('lr = %.0e \n' % lr)
     f.write('epsilon = %.0e \n' % epsilon)
     f.write('d = %d \n' % d)
