@@ -43,3 +43,4 @@ __pycache__/
 *.log
 .DS_Store
 /slurm/
+/results
