@@ -1,6 +1,8 @@
 import numpy as np
+import numba as nb
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import scipy as sp
 from scipy.integrate import quad, dblquad, nquad
 from scipy.special import i1
 from scipy.integrate import odeint
@@ -24,7 +26,7 @@ def _MP_pdf_expression(x, alpha, alpha_minus, alpha_plus):
     
 def MP_expectation(f, alpha):
     """
-    Expectation of E_{x \sim MP(\alpha)} [f(x)]
+    Expectation of E_{x \\sim MP(\\alpha)} [f(x)]
     """
     if alpha == 0:
         return f(1)
@@ -196,3 +198,39 @@ def get_z_covariation(alpha, psi, l2, t, betadiff2, eps=1e-15):
     
     res *= alpha
     return res/2.
+
+
+@nb.cfunc('float64(intc, CPointer(float64))')
+def ld_integral_numba(n, args):
+    """
+    args = (s, t, aminus, aplus)
+    """
+    return (1 - np.exp(-args[0] * args[1])) * np.sqrt((args[3] - args[0]) * (args[0] - args[2])) / args[0] ** 2
+
+ld_integral_c = sp.LowLevelCallable(ld_integral_numba.ctypes)
+
+
+def ld_integral(arg_t, aminus, aplus):
+    return quad(ld_integral_c, aminus, aplus, args=(arg_t, aminus, aplus))[0]
+
+ld_integral = np.vectorize(ld_integral)
+
+
+def get_ld_z_covariance_exp(alpha, t):
+    arg_t = 2 * np.where(alpha > 1, alpha * t, t)
+    
+    aminus = MP_alpha_minus(alpha)
+    aplus = MP_alpha_plus(alpha)
+    
+    res = ld_integral(arg_t, aminus, aplus) / (2 * np.pi)
+    
+    return res
+
+
+def get_ld_z_covariance(alphas, ts, include_orth_space=True):
+    alphas = np.asarray(alphas)[:, np.newaxis]
+    ts = np.asarray(ts)[np.newaxis, :]
+    res = get_ld_z_covariance_exp(alphas, ts)
+    if include_orth_space:
+        res += np.maximum(0, 1 - 1 / alphas) * ts / 2
+    return res / 2
