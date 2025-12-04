@@ -1,4 +1,7 @@
 import ast
+import logging
+import sys
+from logging.handlers import QueueHandler, QueueListener
 import numpy as np
 
 
@@ -14,6 +17,42 @@ def xlog_scale(log_x_max, scale, log_base=10):
     xlog = np.insert(xlog, len(xlog),log_base ** (log_x_max + 1), axis=0)
     jlog = (xlog * scale).astype(int)
     return jlog
+
+
+def worker_init(log_queue):
+    """
+    Called once in each worker process.
+    Routes all logging from that process into the shared queue.
+    """
+    queue_handler = QueueHandler(log_queue)
+    root = logging.getLogger()  # process-local root logger
+    root.setLevel(logging.INFO)
+
+    # Avoid duplicated handlers if Pool reuses processes
+    root.handlers.clear()
+    root.addHandler(queue_handler)
+
+
+def setup_main_logging(log_queue):
+    # This handler will be used for BOTH:
+    # - records coming from workers via QueueListener
+    # - records logged directly in the main process
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter(
+        "%(asctime)s [%(processName)s] %(levelname)s: %(message)s"
+    )
+    handler.setFormatter(formatter)
+
+    # Attach handler to root logger in the main process
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    root.handlers.clear()
+    root.addHandler(handler)
+
+    # Listener will forward records from the queue to the same handler
+    listener = QueueListener(log_queue, handler)
+    listener.start()
+    return listener
 
 
 def parse_config(path):
