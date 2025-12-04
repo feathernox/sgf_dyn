@@ -6,7 +6,7 @@ cimport cython
 import numpy as np
 cimport numpy as np
 from libc.stdlib cimport malloc, free
-import time
+
 
 cpdef trainGD(int p, int nS, double lr, double[:,:] X, double[:] y, double[:] beta0, np.int64_t[:] plot_list, int n, int d, int n_it_max):
     cdef int k, r, s, u, q
@@ -31,7 +31,6 @@ cpdef trainGD(int p, int nS, double lr, double[:,:] X, double[:] y, double[:] be
     cdef double *arr6 = <double*>malloc( n * p * sizeof(double))
     cdef double[:,:] XS = <double[:n, :p]>arr6
 
-    print('Beginning GD training ----- p= %d --- nS= %d' % (p,nS))
     ###### Select randomly p integers from [d]
     S  = np.random.choice(d, size=p, replace=False)
          
@@ -54,8 +53,6 @@ cpdef trainGD(int p, int nS, double lr, double[:,:] X, double[:] y, double[:] be
     betaS_.append(np.array(betaS0))
     betaS = np.copy(betaS0)
     free(arr5)
-    ##############
-    start = time.time()
     ##############
 
     for k in range(1,n_it_max+1):
@@ -82,18 +79,11 @@ cpdef trainGD(int p, int nS, double lr, double[:,:] X, double[:] y, double[:] be
         save_k = k in plot_list
         if save_k:
             betaS_.append(np.array(betaS))
-            
-    ##############
-    end = time.time()
     ##############
     free(arr3)
     free(arr4)
     free(arr6)
     free(arr)
-
-    print('Time elapsed GD: %f' % (end-start))
-    print('End ----- p= %d --- nS= %d' % (p,nS))
-    print(' ')
 
     return np.array(betaS_)
 
