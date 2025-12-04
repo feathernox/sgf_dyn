@@ -234,3 +234,21 @@ def get_ld_z_covariance(alphas, ts, include_orth_space=True):
     if include_orth_space:
         res += np.maximum(0, 1 - 1 / alphas) * ts / 2
     return res / 2
+
+
+def get_ld_z_covariance_infty(alphas, include_orth_space=True):
+    alphas = np.asarray(alphas)
+    res = np.empty_like(alphas, dtype=float)
+
+    mask_lt = alphas < 1
+    mask_eq = alphas == 1
+    mask_gt = alphas > 1
+
+    res[mask_lt] = alphas[mask_lt] / (1 - alphas[mask_lt])
+
+    if include_orth_space:
+        res[mask_gt] = np.inf
+    else:
+        res[mask_gt] = alphas[mask_gt] / (alphas[mask_gt] - 1)
+
+    return res / 2
