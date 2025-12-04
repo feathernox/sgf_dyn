@@ -3,6 +3,7 @@ import itertools
 from multiprocessing.pool import Pool
 import os
 import pickle
+import argparse
 from trainLD import trainLD
 ##### Fix a seed for reproducibility
 np.random.seed(0)
@@ -20,42 +21,41 @@ def xlog_scale(log_x_max, scale, log_base= 10):
     jlog = (xlog*scale).astype(int)
     return jlog
 
-##### p's input
-##### intI and intF controls the set of p's to be run
-np_points = 50
-###
-intI = 0
-intF = 7
-###
-#intI = 7
-#intF = 14
-###
-#intI = 14
-#intF = 21
-###
-#intI = 21
-#intF = 28
-##### Parameters
-# Data dimension
-d = 1000
-# Number of data points
-n = 400
-# Number of S random instances
-nS = 1000
-# Signal-to-noise ratio
-snr = 1. / 5.
-# Max number of process iterations
-n_it_max= int(1e6)  
-##### Number of stochastic runs 
-n_runs = 1
-###########################
-##### Store only the terminal point in the dynamics
-only_end = False
-###########################
-##### Learning rate
-lr = 1. / d
-##### Diffusion coefficient
-epsilon = 0.1
+parser = argparse.ArgumentParser()
+# p-range
+parser.add_argument("--np_points", type=int, default=50, help="Number of p-grid points")
+parser.add_argument("--intI", type=int, default=0, help="Initial index of p-range")
+parser.add_argument("--intF", type=int, default=7, help="Final index of p-range")
+
+# parameters
+parser.add_argument("-d", "--d", type=int, default=1000, help="Data dimension")
+parser.add_argument("-n", "--n", type=int, default=400, help="Number of data points")
+parser.add_argument("--nS", type=int, default=1000, help="Number of S random instances")
+parser.add_argument("--snr", type=float, default=1./5, help="Signal-to-noise ratio")
+parser.add_argument("--n_it_max", type=lambda x: int(float(x)), default=int(1e6),
+                                         help="Max number of (S)GD iterations")
+parser.add_argument("--only_end", action="store_true", help="Store only the terminal point in the dynamics")
+parser.add_argument("--lr", type=float, default=None, help="Learning rate (default: 1/d)")
+parser.add_argument("--n_runs", type=int, default=1, help="Number of stochastic runst")
+parser.add_argument("--epsilon", type=float, default=0.1, help="Diffusion coefficient")
+
+args = parser.parse_args()
+if args.lr is None:
+    args.lr = 1.0 / args.d
+
+np_points = args.np_points
+intI = args.intI
+intF = args.intF
+d = args.d
+n = args.n
+nS = args.nS
+snr = args.snr
+n_it_max = args.n_it_max
+only_end = args.only_end
+lr = args.lr
+n_runs = args.n_runs
+epsilon = args.epsilon
+
 ##### Data matrix
 X = np.random.randn(n,d)
 ##### Beta star d-dimension (ground true)
