@@ -6,7 +6,6 @@ cimport cython
 import numpy as np
 cimport numpy as np
 from libc.stdlib cimport malloc, free
-import time
 
 cpdef trainLD(int p, int nS, double lr, double[:,:] X, double[:] y, double[:] beta0, np.int64_t[:] plot_list,
 int n, int d, int n_it_max, int n_runs, double epsilon):
@@ -42,7 +41,6 @@ int n, int d, int n_it_max, int n_runs, double epsilon):
 
     try:
         diff_coeff = np.sqrt(2 * epsilon)
-        print('Beginning LD training ----- p= %d --- nS= %d\n' % (p,nS), end='')
         ###### Select randomly p integers from [d]
         S = np.random.choice(d, size=p, replace=False)
         S_view = S
@@ -60,9 +58,6 @@ int n, int d, int n_it_max, int n_runs, double epsilon):
         del X
         
         ######## LANGEVIN DIFFUSION
-        ##############
-        start = time.time()
-        ##############
 
         betaS_av = np.zeros((len(plot_list) + 1, p))
         betaS_av[0] = np.array(betaS0)
@@ -102,13 +97,6 @@ int n, int d, int n_it_max, int n_runs, double epsilon):
                     betaS_av[count_aux] += np.array(betaS) / n_runs
                     count_aux += 1
             # print(np.asarray(betaS))
-
-        ##############
-        end = time.time()
-        ##############
-        print('Time elapsed LD: %f' % (end-start))
-        print('End ----- p= %d --- nS= %d' % (p,nS))
-        print(' ')
 
         return betaS_av
 
