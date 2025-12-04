@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from multiprocessing.pool import Pool
-from theory import get_z_covariation
+from theory.theory import get_z_covariation
 from collections import defaultdict
 import pickle
 
