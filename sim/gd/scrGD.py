@@ -13,7 +13,7 @@ import time
 np.random.seed(0)
 
 
-def xlog_scale(log_x_max, scale, log_base= 10): 
+def xlog_scale(log_x_max, scale, log_base=10): 
     '''Logaritmic scale up to log_alpha_max'''
     bd_block = np.arange(0, log_base**2, log_base) + log_base
     bd_block = bd_block[0:-1]
@@ -77,6 +77,8 @@ def training(p, nS):
 
 
 if __name__ == '__main__':
+    np.random.seed(0)
+
     parser = argparse.ArgumentParser()
     # p-range
     parser.add_argument("--np_points", type=int, default=50, help="Number of p-grid points")
