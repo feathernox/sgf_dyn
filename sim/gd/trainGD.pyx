@@ -25,65 +25,83 @@ cpdef trainGD(int p, int nS, double lr, double[:,:] X, double[:] y, double[:] be
     #####
     cdef double gd_aux0, gd_aux1
     #####
-    cdef long *arr2 = <long*>malloc(p * sizeof(double))
-    cdef long[:] S = <long[:p]>arr2
-    #####
     cdef double *arr6 = <double*>malloc( n * p * sizeof(double))
     cdef double[:,:] XS = <double[:n, :p]>arr6
-
-    ###### Select randomly p integers from [d]
-    S  = np.random.choice(d, size=p, replace=False)
-         
-    ###### Initializing the estimator
-    betaS0[:] = 0.
-    for q in range(0,p):
-        betaS0[q] = beta0[S[q]]
-    del beta0
-
-    ###### Constructing XS
-    for r in range(0,n):
-        for q in range(0,p):
-            XS[r,q] = X[r,S[q]]
-    del X
-    free(arr2)
-       
-    ######## GRADIENT DESCENT
     #####
-    betaS_ = []
-    betaS_.append(np.array(betaS0))
-    betaS = np.copy(betaS0)
-    free(arr5)
-    ##############
+    cdef np.int64_t[::1] S_view
+    #####
+    cdef np.ndarray[np.float64_t, ndim=2] betaS_av
+    cdef double[:, ::1] betaS_mv
+    cdef Py_ssize_t n_plots
+    cdef Py_ssize_t count_aux = 1
+    cdef long next_plot_k
 
-    for k in range(1,n_it_max+1):
-        #### GD ####
-        ## Inner product: XS and beta_k 
-        D[:] = 0. 
-        GRAD[:] = 0.
-        for r in range(0,n):
-            gd_aux0 = 0.
-            for s in range(0,p):
-                gd_aux0 += XS[r,s]*betaS[s]
-            D[r] = y[r] - gd_aux0
-        ## Inner product: y - XS*betaS times xs
-        for r in range(0,p):
-            gd_aux1 = 0.
-            for s in range(0,n):
-                gd_aux1 += XS[s,r]*D[s]
-            GRAD[r] = gd_aux1   
-        ## GD update
-        for u in range(0,p):
-            betaS[u] += (lr/n)*GRAD[u]
+    try:
+        ###### Select randomly p integers from [d]
+        S = np.random.choice(d, size=p, replace=False)
+        S_view = S
 
-        ## Retrieving dynamics
-        save_k = k in plot_list
-        if save_k:
-            betaS_.append(np.array(betaS))
-    ##############
-    free(arr3)
-    free(arr4)
-    free(arr6)
-    free(arr)
+        ###### Initializing the estimator
+        betaS0[:] = 0.
+        for s in range(p):
+            betaS0[s] = beta0[S_view[s]]
+        del beta0
 
-    return np.array(betaS_)
+        ###### Constructing XS
+        for r in range(n):
+            for s in range(p):
+                XS[r, s] = X[r, S_view[s]]
+        del X
 
+        ######## Preparing array for beta evolution
+        n_plots = plot_list.shape[0]
+        betaS_av = np.zeros((n_plots + 1, p))
+        betaS_mv = betaS_av
+        for s in range(p):
+            betaS_mv[0, s] = betaS0[s]
+        if n_plots > 0:
+            next_plot_k = plot_list[0]
+        else:
+            next_plot_k = -1
+        
+        betaS[:] = betaS0[:]
+        for k in range(1, n_it_max + 1):
+            #### GD ####
+            ## Inner product: XS and beta_k
+            for r in range(n):
+                D[r] = 0. 
+            for s in range(p):
+                GRAD[s] = 0.
+            for r in range(n):
+                gd_aux0 = 0.
+                for s in range(0,p):
+                    gd_aux0 += XS[r, s] * betaS[s]
+                D[r] = y[r] - gd_aux0
+            ## Inner product: y - XS*betaS times xs
+            for s in range(p):
+                gd_aux1 = 0.
+                for r in range(n):
+                    gd_aux1 += XS[r, s] * D[r]
+                GRAD[s] = gd_aux1   
+            ## GD update
+            for s in range(p):
+                betaS[s] += (lr / n) * GRAD[s]
+
+            ## Retrieving dynamics 
+            if k == next_plot_k:
+                for s in range(p):
+                    betaS_mv[count_aux, s] = betaS[s] 
+                count_aux += 1
+                if count_aux <= n_plots:
+                    next_plot_k = plot_list[count_aux - 1]
+                else:
+                    next_plot_k = -1
+        
+        return betaS_av
+
+    finally:
+        free(arr)
+        free(arr3)
+        free(arr4)
+        free(arr5)
+        free(arr6)
