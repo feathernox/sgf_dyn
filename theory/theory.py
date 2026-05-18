@@ -54,21 +54,21 @@ def expectation_MP_exp(alpha, t, eps=1e-2, max_i1_arg=100):
     return res[1:, 0]
 
 
-##### TRAIN ERROR OLD ######
+##### GF TRAIN ERROR OLD ######
 
-def Etrain_inf_time(alpha, psi, l2, beta2=1.): 
+def Etrain_gf_inf_time(alpha, psi, l2, beta2=1.): 
     # no dependency on betadiff2
     res = ((1 - alpha / psi) * beta2 + l2) * (1 - np.minimum(alpha, 1))
     return res
     
     
-def Etrain_inf_time_precise(p, n, d, l2, beta2=1.): 
+def Etrain_gf_inf_time_precise(p, n, d, l2, beta2=1.): 
     # no dependency on betadiff2
     res = ((1 - p / d) * beta2 + l2) * (1 - np.minimum(p, n) / n)
     return res
 
 
-def _Etrain_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=1.):
+def _Etrain_gf_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=1.):
     f1 = lambda x: x * math.exp(-2 * t * x)
     f2 = lambda x: math.exp(-2 * t * x)
     res = alpha * betadiff2 / psi * MP_expectation(f1, alpha) + \
@@ -76,7 +76,7 @@ def _Etrain_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=1.):
     return res
 
 
-def _Etrain_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=1.):
+def _Etrain_gf_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=1.):
     f1 = lambda x: x * math.exp(-2 * t * alpha * x)
     f2 = lambda x: math.exp(-2 * t * alpha * x)
     res =  betadiff2 / psi * alpha * MP_expectation(f1, 1 / alpha) + \
@@ -84,43 +84,43 @@ def _Etrain_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=1.):
     return res
 
 
-_Etrain_alpha_leq_1 = np.vectorize(_Etrain_alpha_leq_1)
-_Etrain_alpha_g_1 = np.vectorize(_Etrain_alpha_g_1)
+_Etrain_gf_alpha_leq_1 = np.vectorize(_Etrain_gf_alpha_leq_1)
+_Etrain_gf_alpha_g_1 = np.vectorize(_Etrain_gf_alpha_g_1)
 
 
-def Etrain(alpha, psi, l2, t, betadiff2, beta2=1.):
+def Etrain_gf(alpha, psi, l2, t, betadiff2, beta2=1.):
     if alpha <= 1:
-        return _Etrain_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
+        return _Etrain_gf_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
     else:
-        return _Etrain_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
+        return _Etrain_gf_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
     
-Etrain = np.vectorize(Etrain)
+Etrain_gf = np.vectorize(Etrain_gf)
 
 
-##### TEST ERROR OLD ######
+##### GF TEST ERROR OLD ######
 
 
-def _Etest_inf_time_alpha_leq_1(alpha, psi, l2, betadiff2, beta2=1.):
+def _Etest_gf_inf_time_alpha_leq_1(alpha, psi, l2, betadiff2, beta2=1.):
     res = ((1 - alpha / psi) * beta2 + l2) * 1 / (1 - alpha)
     return res
 
 
-def _Etest_inf_time_alpha_g_1(alpha, psi, l2, betadiff2, beta2=1.):
+def _Etest_gf_inf_time_alpha_g_1(alpha, psi, l2, betadiff2, beta2=1.):
     res = alpha / psi * betadiff2 * (1 - 1 / alpha) + ((1 - alpha / psi) * beta2 + l2) * (1 + 1 / (alpha - 1))
     return res
     
     
-def Etest_inf_time(alpha, psi, l2, betadiff2, beta2=1.):
+def Etest_gf_inf_time(alpha, psi, l2, betadiff2, beta2=1.):
     alpha = np.asarray(alpha)
     res = np.zeros(alpha.shape)
     
     is_alpha_leq_1 = alpha <= 1 
-    res[is_alpha_leq_1] = _Etest_inf_time_alpha_leq_1(alpha[is_alpha_leq_1], psi, l2, betadiff2, beta2=beta2)
-    res[~is_alpha_leq_1] = _Etest_inf_time_alpha_g_1(alpha[~is_alpha_leq_1], psi, l2, betadiff2, beta2=beta2)
+    res[is_alpha_leq_1] = _Etest_gf_inf_time_alpha_leq_1(alpha[is_alpha_leq_1], psi, l2, betadiff2, beta2=beta2)
+    res[~is_alpha_leq_1] = _Etest_gf_inf_time_alpha_g_1(alpha[~is_alpha_leq_1], psi, l2, betadiff2, beta2=beta2)
     return res
 
 
-def Etest_inf_time_precise(p, n, d, l2, betadiff2, beta2=1.):
+def Etest_gf_inf_time_precise(p, n, d, l2, betadiff2, beta2=1.):
     p = np.asarray(p)
     res = np.full(p.shape, np.inf)
     
@@ -135,7 +135,7 @@ def Etest_inf_time_precise(p, n, d, l2, betadiff2, beta2=1.):
     return res
 
 
-def _legacy_Etest_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=1.):
+def _legacy_Etest_gf_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=1.):
     f1 = lambda x: math.exp(-2 * t * x)
     f2 = lambda x: (1 - math.exp(- t * x)) ** 2 / x
     res = alpha * betadiff2 / psi * MP_expectation(f1, alpha) + \
@@ -143,7 +143,7 @@ def _legacy_Etest_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=1.):
     return res
 
 
-def _legacy_Etest_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=1.):
+def _legacy_Etest_gf_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=1.):
     f1 = lambda x: math.exp(-2 * alpha * t * x)
     f2 = lambda x: (1 - math.exp(- alpha * t * x)) ** 2 / x
     res = betadiff2 * (alpha - 1) / psi + betadiff2 / psi * MP_expectation(f1, 1 / alpha) + \
@@ -151,26 +151,26 @@ def _legacy_Etest_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=1.):
     return res
 
 
-_legacy_Etest_alpha_leq_1 = np.vectorize(_legacy_Etest_alpha_leq_1)
-_legacy_Etest_alpha_g_1 = np.vectorize(_legacy_Etest_alpha_g_1)
+_legacy_Etest_gf_alpha_leq_1 = np.vectorize(_legacy_Etest_gf_alpha_leq_1)
+_legacy_Etest_gf_alpha_g_1 = np.vectorize(_legacy_Etest_gf_alpha_g_1)
  
 
-def legacy_Etest(alpha, psi, l2, t, betadiff2, beta2=1.):
+def legacy_Etest_gf(alpha, psi, l2, t, betadiff2, beta2=1.):
     """ 
     No factor 1 / 2 applied here
     """
     if alpha <= 1:
-        return _legacy_Etest_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
+        return _legacy_Etest_gf_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
     else:
-        return _legacy_Etest_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
+        return _legacy_Etest_gf_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
 
-legacy_Etest = np.vectorize(legacy_Etest)
+legacy_Etest_gf = np.vectorize(legacy_Etest_gf)
 
 
 
 def get_z_covariation(alpha, psi, l2, t, betadiff2, eps=1e-15):
     """
-    TODO: I think I need to remove 1/2 here for consistency or add it to Etest
+    TODO: I think I need to remove 1/2 here for consistency or add it to Etest_gf
     """
 #     alpha = np.asarray(alpha)
 
