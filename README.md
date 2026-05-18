@@ -21,6 +21,7 @@ In this repository we provide the code and some guided examples to help the read
 |---------------------------------|---------------------------------------------------------------------------------------|
 | ```/gd```                       | ```scrGD.py```: script to train GD importing cython code from ```trainGD.pyx```       |
 | ```/sgd```                      | ```scrSGD.py```: script to train SGD importing cython code from ```trainSGD.pyx```    |
+| ```/ld```                      | ```scrLD.py```: script to train Langevin diffusion importing cython code from ```trainLD.pyx```    |
 | ```/compute_eg```               | ```scrSGD.py```: script to compute EG importing cython code from ```compute_eg.pyx``` |                         
 
 The notebooks `how_to.ipynb` inside each subfolder are intended to be self-explanatory.
