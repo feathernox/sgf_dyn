@@ -71,6 +71,7 @@ def Etest_inf_time(alpha, psi, l2, betadiff2):
     res[~is_alpha_leq_1] = _Etest_inf_time_alpha_g_1(alpha[~is_alpha_leq_1], psi, l2, betadiff2)
     return res
 
+
 def Etest_inf_time_precise(p, n, d, l2, betadiff2):
     p = np.asarray(p)
     res = np.full(p.shape, np.inf)
@@ -113,7 +114,6 @@ def Etrain(alpha, psi, l2, t, betadiff2):
         return _Etrain_alpha_g_1(alpha, psi, l2, t, betadiff2)
     
 Etrain = np.vectorize(Etrain)
-    
 
 
 def _Etest_alpha_leq_1(alpha, psi, l2, t, betadiff2):
