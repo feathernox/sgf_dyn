@@ -1,7 +1,5 @@
 import numpy as np
 import numba as nb
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import scipy as sp
 from scipy.integrate import quad, dblquad, nquad
 from scipy.special import i1
@@ -56,134 +54,191 @@ def expectation_MP_exp(alpha, t, eps=1e-2, max_i1_arg=100):
 
 ##### GF TRAIN ERROR OLD ######
 
-def Etrain_gf_inf_time(alpha, psi, l2, beta2=1.): 
+def GF_train_error_inf_time(alpha, psi, mu2, beta2=1.): 
     # no dependency on betadiff2
-    res = ((1 - alpha / psi) * beta2 + l2) * (1 - np.minimum(alpha, 1))
+    res = ((1 - alpha / psi) * beta2 + mu2) * (1 - np.minimum(alpha, 1))
     res = res / 2  # factor 1/2
     return res
     
     
-def Etrain_gf_inf_time_precise(p, n, d, l2, beta2=1.): 
+def GF_train_error_inf_time_precise(p, n, d, mu2, beta2=1.): 
     # no dependency on betadiff2
-    res = ((1 - p / d) * beta2 + l2) * (1 - np.minimum(p, n) / n)
+    res = ((1 - p / d) * beta2 + mu2) * (1 - np.minimum(p, n) / n)
     res = res / 2  # factor 1/2
     return res
 
 
-def _Etrain_gf_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=1.):
+def _GF_train_error_alpha_leq_1(alpha, psi, mu2, t, betadiff2, beta2=1.):
     f1 = lambda x: x * math.exp(-2 * t * x)
     f2 = lambda x: math.exp(-2 * t * x)
     res = alpha * betadiff2 / psi * MP_expectation(f1, alpha) + \
-          ((1 - alpha / psi) * beta2 + l2) * (1 - alpha + alpha * MP_expectation(f2, alpha))
+          ((1 - alpha / psi) * beta2 + mu2) * (1 - alpha + alpha * MP_expectation(f2, alpha))
     res = res / 2  # factor 1/2
     return res
 
 
-def _Etrain_gf_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=1.):
+def _GF_train_error_alpha_g_1(alpha, psi, mu2, t, betadiff2, beta2=1.):
     f1 = lambda x: x * math.exp(-2 * t * alpha * x)
     f2 = lambda x: math.exp(-2 * t * alpha * x)
     res =  betadiff2 / psi * alpha * MP_expectation(f1, 1 / alpha) + \
-            ((1 - alpha / psi) * beta2 + l2) * MP_expectation(f2, 1 / alpha)
+            ((1 - alpha / psi) * beta2 + mu2) * MP_expectation(f2, 1 / alpha)
     res = res / 2  # factor 1/2
     return res
 
 
-_Etrain_gf_alpha_leq_1 = np.vectorize(_Etrain_gf_alpha_leq_1)
-_Etrain_gf_alpha_g_1 = np.vectorize(_Etrain_gf_alpha_g_1)
+_GF_train_error_alpha_leq_1 = np.vectorize(_GF_train_error_alpha_leq_1)
+_GF_train_error_alpha_g_1 = np.vectorize(_GF_train_error_alpha_g_1)
 
 
-def Etrain_gf(alpha, psi, l2, t, betadiff2, beta2=1.):
+def GF_train_error(alpha, psi, mu2, t, betadiff2, beta2=1.):
     if alpha <= 1:
-        return _Etrain_gf_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
+        return _GF_train_error_alpha_leq_1(alpha, psi, mu2, t, betadiff2, beta2=beta2)
     else:
-        return _Etrain_gf_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
+        return _GF_train_error_alpha_g_1(alpha, psi, mu2, t, betadiff2, beta2=beta2)
     
-Etrain_gf = np.vectorize(Etrain_gf)
+GF_train_error = np.vectorize(GF_train_error)
 
 
-##### GF TEST ERROR OLD ######
+##### GF TEST ERROR LEGACY ######
 
 
-def _Etest_gf_inf_time_alpha_leq_1(alpha, psi, l2, betadiff2, beta2=1.):
-    res = ((1 - alpha / psi) * beta2 + l2) * 1 / (1 - alpha)
+def _legacy_GF_test_error_inf_time_alpha_leq_1(alpha, psi, mu2, betadiff2, beta2=1.):
+    res = ((1 - alpha / psi) * beta2 + mu2) * 1 / (1 - alpha)
     res = res / 2  # factor 1/2
     return res
 
 
-def _Etest_gf_inf_time_alpha_g_1(alpha, psi, l2, betadiff2, beta2=1.):
-    res = alpha / psi * betadiff2 * (1 - 1 / alpha) + ((1 - alpha / psi) * beta2 + l2) * (1 + 1 / (alpha - 1))
+def _legacy_GF_test_error_inf_time_alpha_g_1(alpha, psi, mu2, betadiff2, beta2=1.):
+    res = alpha / psi * betadiff2 * (1 - 1 / alpha) + ((1 - alpha / psi) * beta2 + mu2) * (1 + 1 / (alpha - 1))
     res = res / 2  # factor 1/2
     return res
     
     
-def Etest_gf_inf_time(alpha, psi, l2, betadiff2, beta2=1.):
+def legacy_GF_test_error_inf_time(alpha, psi, mu2, betadiff2, beta2=1.):
     alpha = np.asarray(alpha)
     res = np.zeros(alpha.shape)
     
     is_alpha_leq_1 = alpha <= 1 
-    res[is_alpha_leq_1] = _Etest_gf_inf_time_alpha_leq_1(alpha[is_alpha_leq_1], psi, l2, betadiff2, beta2=beta2)
-    res[~is_alpha_leq_1] = _Etest_gf_inf_time_alpha_g_1(alpha[~is_alpha_leq_1], psi, l2, betadiff2, beta2=beta2)
+    res[is_alpha_leq_1] = _legacy_GF_test_error_inf_time_alpha_leq_1(alpha[is_alpha_leq_1], psi, mu2, betadiff2, beta2=beta2)
+    res[~is_alpha_leq_1] = _legacy_GF_test_error_inf_time_alpha_g_1(alpha[~is_alpha_leq_1], psi, mu2, betadiff2, beta2=beta2)
     return res
 
 
-def Etest_gf_inf_time_precise(p, n, d, l2, betadiff2, beta2=1.):
+def GF_test_error_inf_time_precise(p, n, d, mu2, betadiff2, beta2=1.):
     p = np.asarray(p)
     res = np.full(p.shape, np.inf)
     
     is_p_l_nm1 = p < (n - 1)
     p_l_nm1 = p[is_p_l_nm1]
-    res[is_p_l_nm1] = ((1 - p_l_nm1 / d) * beta2 + l2) * (1 + p_l_nm1 / (n - p_l_nm1 - 1))
+    res[is_p_l_nm1] = ((1 - p_l_nm1 / d) * beta2 + mu2) * (1 + p_l_nm1 / (n - p_l_nm1 - 1))
     
     is_p_g_np1 = p > (n + 1)
     p_g_np1 = p[is_p_g_np1]
-    res[is_p_g_np1] = p_g_np1 / d * betadiff2 * (1 - n / p_g_np1) + ((1 - p_g_np1 / d) * beta2 + l2) * (1 + n / (p_g_np1 - n - 1))
+    res[is_p_g_np1] = p_g_np1 / d * betadiff2 * (1 - n / p_g_np1) + ((1 - p_g_np1 / d) * beta2 + mu2) * (1 + n / (p_g_np1 - n - 1))
 
     res = res / 2  # factor 1/2
     return res
 
 
-def _legacy_Etest_gf_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=1.):
+def _legacy_GF_test_error_alpha_leq_1(alpha, psi, mu2, t, betadiff2, beta2=1.):
     f1 = lambda x: math.exp(-2 * t * x)
     f2 = lambda x: (1 - math.exp(- t * x)) ** 2 / x
     res = alpha * betadiff2 / psi * MP_expectation(f1, alpha) + \
-          ((1 - alpha / psi) * beta2 + l2) * (1 + alpha * MP_expectation(f2, alpha))
+          ((1 - alpha / psi) * beta2 + mu2) * (1 + alpha * MP_expectation(f2, alpha))
     res = res / 2  # factor 1/2
     return res
 
 
-def _legacy_Etest_gf_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=1.):
+def _legacy_GF_test_error_alpha_g_1(alpha, psi, mu2, t, betadiff2, beta2=1.):
     f1 = lambda x: math.exp(-2 * alpha * t * x)
     f2 = lambda x: (1 - math.exp(- alpha * t * x)) ** 2 / x
     res = betadiff2 * (alpha - 1) / psi + betadiff2 / psi * MP_expectation(f1, 1 / alpha) + \
-          ((1 - alpha / psi) * beta2 + l2) * (1 + 1 / alpha * MP_expectation(f2, 1 / alpha))
+          ((1 - alpha / psi) * beta2 + mu2) * (1 + 1 / alpha * MP_expectation(f2, 1 / alpha))
     res = res / 2  # factor 1/2
     return res
 
 
-_legacy_Etest_gf_alpha_leq_1 = np.vectorize(_legacy_Etest_gf_alpha_leq_1)
-_legacy_Etest_gf_alpha_g_1 = np.vectorize(_legacy_Etest_gf_alpha_g_1)
+_legacy_GF_test_error_alpha_leq_1 = np.vectorize(_legacy_GF_test_error_alpha_leq_1)
+_legacy_GF_test_error_alpha_g_1 = np.vectorize(_legacy_GF_test_error_alpha_g_1)
  
 
-def legacy_Etest_gf(alpha, psi, l2, t, betadiff2, beta2=1.):
+def legacy_GF_test_error(alpha, psi, mu2, t, betadiff2, beta2=1.):
     """ 
     with factor 1/2
     """
     if alpha <= 1:
-        return _legacy_Etest_gf_alpha_leq_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
+        return _legacy_GF_test_error_alpha_leq_1(alpha, psi, mu2, t, betadiff2, beta2=beta2)
     else:
-        return _legacy_Etest_gf_alpha_g_1(alpha, psi, l2, t, betadiff2, beta2=beta2)
+        return _legacy_GF_test_error_alpha_g_1(alpha, psi, mu2, t, betadiff2, beta2=beta2)
 
-legacy_Etest_gf = np.vectorize(legacy_Etest_gf)
+legacy_GF_test_error = np.vectorize(legacy_GF_test_error)
 
 
+##### GF TEST ERROR NEW ######
 
-def get_z_covariation(alpha, psi, l2, t, betadiff2, eps=1e-15):
+@nb.cfunc('float64(intc, CPointer(float64))')
+def gf_test_int1_numba(n, args):
+    """
+    args = (s, t, aminus, aplus)
+    """
+    return np.exp(-2 * args[0] * args[1]) * np.sqrt((args[3] - args[0]) * (args[0] - args[2])) / args[0]
+
+gf_test_int1_c = sp.LowLevelCallable(gf_test_int1_numba.ctypes)
+
+def gf_test_int1(t, aminus, aplus):
+    return quad(gf_test_int1_c, aminus, aplus, args=(t, aminus, aplus))[0]
+
+gf_test_int1 = np.vectorize(gf_test_int1)
+
+
+@nb.cfunc('float64(intc, CPointer(float64))')
+def gf_test_int2_numba(n, args):
+    """
+    args = (s, t, aminus, aplus)
+    """
+    return ((1 - np.exp(-args[0] * args[1])) / args[0]) ** 2 * np.sqrt((args[3] - args[0]) * (args[0] - args[2])) 
+
+gf_test_int2_c = sp.LowLevelCallable(gf_test_int2_numba.ctypes)
+
+def gf_test_int2(t, aminus, aplus):
+    return quad(gf_test_int2_c, aminus, aplus, args=(t, aminus, aplus))[0]
+
+gf_test_int2 = np.vectorize(gf_test_int2)
+
+
+def GF_test_error(alphas, ts, psi=2.5, betadiff2=2, beta2=1, mu2=0.04):
+    ts = np.asarray(ts)[np.newaxis, :]
+    alphas = np.asarray(alphas)[:, np.newaxis]
+    aminus = MP_alpha_minus(alphas)
+    aplus = MP_alpha_plus(alphas)
+    # axis 0: alpha, axis1: t 
+    int1 = np.maximum(alphas - 1, 0) + 1 / (2 * np.pi) * gf_test_int1(ts, aminus, aplus)
+    int2 = 1 + 1 / (2 * np.pi) * gf_test_int2(ts, aminus, aplus)
+    
+    res = 1 / 2 * (betadiff2 / psi * int1 + ((1 - alphas / psi) * beta2 + mu2) * int2)
+    return res
+
+
+def GF_test_error_inf_time(alphas, psi=2.5, betadiff2=2, beta2=1, mu2=0.04):
+    # 0.5 below is placeholder value, can be anything as long as
+    # it evaluates on double descent expression
+    safe = np.where((alphas == 0) | (alphas == 1), 0.5, alphas) 
+    double_descent = np.where(alphas == 0, 1.0,
+         np.where(alphas == 1, np.inf, 1 / (1 - np.minimum(safe, 1 / safe))))
+    res = 1 / 2 * (betadiff2 / psi * np.maximum(alphas - 1, 0) + \
+                   ((1 - alphas / psi) * beta2 + mu2) * double_descent)
+    return res
+
+
+##### TODO SGF need to check #####
+
+def get_z_covariation(alpha, psi, mu2, t, betadiff2, eps=1e-15):
 #     alpha = np.asarray(alpha)
 
     t = np.asarray(t)
     
     coef1 = 8 * np.sqrt(alpha) / psi * betadiff2
-    coef2 = 1 - alpha / psi + l2
+    coef2 = 1 - alpha / psi + mu2
     
     aminus = MP_alpha_minus(alpha)
     aplus = MP_alpha_plus(alpha)
