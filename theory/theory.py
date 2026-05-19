@@ -230,7 +230,56 @@ def GF_test_error_inf_time(alphas, psi=2.5, betadiff2=2, beta2=1, mu2=0.04):
     return res
 
 
+##### GF TEST ERROR WITH 2ND ORDER CORRECTION #####
+
+@nb.cfunc('float64(intc, CPointer(float64))')
+def gf2ord_test_int1_numba(n, args):
+    """
+    args = (s, t, aminus, aplus, gamma)
+    """
+    s, t, aminus, aplus, gamma = args[0], args[1], args[2], args[3], args[4]
+    return np.exp(-2 * (1 + gamma * s) * s * t) * np.sqrt((aplus - s) * (s - aminus)) / s
+
+gf2ord_test_int1_c = sp.LowLevelCallable(gf2ord_test_int1_numba.ctypes)
+
+def gf2ord_test_int1(t, aminus, aplus, gamma):
+    return quad(gf2ord_test_int1_c, aminus, aplus, args=(t, aminus, aplus, gamma))[0]
+
+gf2ord_test_int1 = np.vectorize(gf2ord_test_int1)
+
+
+@nb.cfunc('float64(intc, CPointer(float64))')
+def gf2ord_test_int2_numba(n, args):
+    """
+    args = (s, t, aminus, aplus)
+    """
+    s, t, aminus, aplus, gamma = args[0], args[1], args[2], args[3], args[4]
+    return ((1 - np.exp(-s * (1 + gamma * s) * t)) / s) ** 2 * np.sqrt((aplus - s) * (s - aminus)) 
+
+gf2ord_test_int2_c = sp.LowLevelCallable(gf2ord_test_int2_numba.ctypes)
+
+def gf2ord_test_int2(t, aminus, aplus, gamma):
+    return quad(gf2ord_test_int2_c, aminus, aplus, args=(t, aminus, aplus))[0]
+
+gf2ord_test_int2 = np.vectorize(gf2ord_test_int2)
+
+
+def GF_2nd_order_corr_test_error(alphas, ts, psi=2.5, betadiff2=2, beta2=1, mu2=0.04, gamma=0.1):
+    ts = ts[np.newaxis, :]
+    alphas = alphas[:, np.newaxis]
+    aminus = MP_alpha_minus(alphas)
+    aplus = MP_alpha_plus(alphas)
+    gamma = gamma / 2
+    # axis 0: alpha, axis1: t 
+    int1 = np.maximum(alphas - 1, 0) + 1 / (2 * np.pi) * gf2ord_test_int1(ts, aminus, aplus, gamma)
+    int2 = 1 + 1 / (2 * np.pi) * gf2ord_test_int2(ts, aminus, aplus, gamma)
+    
+    res = 1 / 2 * (betadiff2 / psi * int1 + ((1 - alphas / psi) * beta2 + mu2) * int2)
+    return res
+
+
 ##### TODO SGF need to check #####
+##### TODO: actually in general import a lot from /Users/remizova/SMILS/smils_jupyter/sgflow/gf_test_error.py #####
 
 def get_z_covariation(alpha, psi, mu2, t, betadiff2, eps=1e-15):
 #     alpha = np.asarray(alpha)
