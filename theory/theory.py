@@ -206,16 +206,13 @@ def gf_test_int2(t, aminus, aplus):
 gf_test_int2 = np.vectorize(gf_test_int2)
 
 
-def GF_test_error(alphas, ts, psi=2.5, betadiff2=2, beta2=1, mu2=0.04):
-    ts = np.asarray(ts)[np.newaxis, :]
-    alphas = np.asarray(alphas)[:, np.newaxis]
-    aminus = MP_alpha_minus(alphas)
-    aplus = MP_alpha_plus(alphas)
-    # axis 0: alpha, axis1: t 
-    int1 = np.maximum(alphas - 1, 0) + 1 / (2 * np.pi) * gf_test_int1(ts, aminus, aplus)
-    int2 = 1 + 1 / (2 * np.pi) * gf_test_int2(ts, aminus, aplus)
+def GF_test_error(alpha, t, psi=2.5, betadiff2=2, beta2=1, mu2=0.04):
+    aminus = MP_alpha_minus(alpha)
+    aplus = MP_alpha_plus(alpha)
+    int1 = np.maximum(alpha - 1, 0) + 1 / (2 * np.pi) * gf_test_int1(t, aminus, aplus)
+    int2 = 1 + 1 / (2 * np.pi) * gf_test_int2(t, aminus, aplus)
     
-    res = 1 / 2 * (betadiff2 / psi * int1 + ((1 - alphas / psi) * beta2 + mu2) * int2)
+    res = 1 / 2 * (betadiff2 / psi * int1 + ((1 - alpha / psi) * beta2 + mu2) * int2)
     return res
 
 
@@ -264,17 +261,14 @@ def gf2ord_test_int2(t, aminus, aplus, gamma):
 gf2ord_test_int2 = np.vectorize(gf2ord_test_int2)
 
 
-def GF_2nd_order_corr_test_error(alphas, ts, psi=2.5, betadiff2=2, beta2=1, mu2=0.04, gamma=0.1):
-    ts = ts[np.newaxis, :]
-    alphas = alphas[:, np.newaxis]
-    aminus = MP_alpha_minus(alphas)
-    aplus = MP_alpha_plus(alphas)
+def GF_2nd_order_corr_test_error(alpha, t, psi=2.5, betadiff2=2, beta2=1, mu2=0.04, gamma=0.1):
+    aminus = MP_alpha_minus(alpha)
+    aplus = MP_alpha_plus(alpha)
     gamma = gamma / 2
-    # axis 0: alpha, axis1: t 
-    int1 = np.maximum(alphas - 1, 0) + 1 / (2 * np.pi) * gf2ord_test_int1(ts, aminus, aplus, gamma)
-    int2 = 1 + 1 / (2 * np.pi) * gf2ord_test_int2(ts, aminus, aplus, gamma)
+    int1 = np.maximum(alpha - 1, 0) + 1 / (2 * np.pi) * gf2ord_test_int1(t, aminus, aplus, gamma)
+    int2 = 1 + 1 / (2 * np.pi) * gf2ord_test_int2(t, aminus, aplus, gamma)
     
-    res = 1 / 2 * (betadiff2 / psi * int1 + ((1 - alphas / psi) * beta2 + mu2) * int2)
+    res = 1 / 2 * (betadiff2 / psi * int1 + ((1 - alpha / psi) * beta2 + mu2) * int2)
     return res
 
 
